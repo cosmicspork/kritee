@@ -10,6 +10,11 @@
             <li>
                 <a href="{{ route('appearance.edit') }}" wire:navigate @class(['menu-active' => request()->routeIs('appearance.edit')])>{{ __('Appearance') }}</a>
             </li>
+            @if (auth()->user()?->isAdmin())
+                <li>
+                    <a href="{{ route('team.edit') }}" wire:navigate @class(['menu-active' => request()->routeIs('team.edit')])>{{ __('Team') }}</a>
+                </li>
+            @endif
         </ul>
     </div>
 
