@@ -22,3 +22,11 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+/.agents
+/.claude
+/.codex
+.mcp.json
+AGENTS.md
+boost.json
+CLAUDE.md
+opencode.json
