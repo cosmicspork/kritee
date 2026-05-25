@@ -11,49 +11,49 @@
             @csrf
 
             <!-- Email Address -->
-            <flux:input
+            <x-input
                 name="email"
-                :label="__('Email address')"
-                :value="old('email')"
+                label="{{ __('Email address') }}"
+                value="{{ old('email') }}"
                 type="email"
                 required
                 autofocus
                 autocomplete="email"
                 placeholder="email@example.com"
+                error-field="email"
             />
 
             <!-- Password -->
-            <div class="relative">
-                <flux:input
+            <div>
+                <x-password
                     name="password"
-                    :label="__('Password')"
+                    label="{{ __('Password') }}"
                     type="password"
                     required
                     autocomplete="current-password"
-                    :placeholder="__('Password')"
-                    viewable
+                    placeholder="{{ __('Password') }}"
+                    right
+                    error-field="password"
                 />
 
                 @if (Route::has('password.request'))
-                    <flux:link class="absolute top-0 text-sm end-0" :href="route('password.request')" wire:navigate>
-                        {{ __('Forgot your password?') }}
-                    </flux:link>
+                    <div class="mt-1 text-end">
+                        <a href="{{ route('password.request') }}" class="link link-hover text-sm" wire:navigate>
+                            {{ __('Forgot your password?') }}
+                        </a>
+                    </div>
                 @endif
             </div>
 
             <!-- Remember Me -->
-            <flux:checkbox name="remember" :label="__('Remember me')" :checked="old('remember')" />
+            <x-checkbox name="remember" label="{{ __('Remember me') }}" value="1" @checked(old('remember')) />
 
-            <div class="flex items-center justify-end">
-                <flux:button variant="primary" type="submit" class="w-full" data-test="login-button">
-                    {{ __('Log in') }}
-                </flux:button>
-            </div>
+            <x-button type="submit" label="{{ __('Log in') }}" class="btn-primary w-full" data-test="login-button" />
         </form>
 
-        <div class="space-x-1 text-sm text-center rtl:space-x-reverse text-zinc-600 dark:text-zinc-400">
+        <div class="text-center text-sm text-base-content/60">
             <span>{{ __('Don\'t have an account?') }}</span>
-            <flux:link :href="route('register')" wire:navigate>{{ __('Sign up') }}</flux:link>
+            <a href="{{ route('register') }}" class="link link-hover" wire:navigate>{{ __('Sign up') }}</a>
         </div>
     </div>
 </x-layouts::auth>

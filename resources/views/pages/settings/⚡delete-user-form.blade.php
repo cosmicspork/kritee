@@ -6,15 +6,16 @@ new class extends Component {}; ?>
 
 <section class="mt-10 space-y-6">
     <div class="relative mb-5">
-        <flux:heading>{{ __('Delete account') }}</flux:heading>
-        <flux:subheading>{{ __('Delete your account and all of its resources') }}</flux:subheading>
+        <h3 class="text-lg font-medium">{{ __('Delete account') }}</h3>
+        <p class="text-base-content/60">{{ __('Delete your account and all of its resources') }}</p>
     </div>
 
-    <flux:modal.trigger name="confirm-user-deletion">
-        <flux:button variant="danger" data-test="delete-user-button">
-            {{ __('Delete account') }}
-        </flux:button>
-    </flux:modal.trigger>
+    <x-button
+        label="{{ __('Delete account') }}"
+        class="btn-error"
+        wire:click="$dispatch('open-delete-user-modal')"
+        data-test="delete-user-button"
+    />
 
     <livewire:pages::settings.delete-user-modal />
 </section>
