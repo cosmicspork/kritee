@@ -100,12 +100,29 @@ The lightest enforcement that holds the line:
 
 1. **Namespaces.** `App\Actions\{Domain}\{ActionName}`,
    `App\Services\{Domain}\{ServiceName}`. The namespace says where logic belongs.
-2. **Pest architecture tests** in `tests/Architecture/`, run in CI: classes in
-   `App\Actions` implement `Action`; classes in `App\Services` import neither
-   `DB::transaction`, `Event`, nor anything from `App\Actions`; `execute` takes
-   one `ActionInput` and returns `ActionResult`; controllers don't import models.
-3. **`make:action` generator** scaffolds Action + Input DTO + Result + test stub.
-   The easy path should be the right path.
+2. **Pest architecture tests** in `tests/Architecture/`, run in CI. The core
+   rules:
+   - Classes in `App\Actions` implement `Action`; `execute` takes one
+     `ActionInput` and returns `ActionResult`.
+   - Classes in `App\Services` import neither `DB::transaction`, `Event`, nor
+     anything from `App\Actions`, and are `final` (services are leaf nodes —
+     subclassing one is a smell that it should have been an action).
+   - Controllers don't import models.
+   - Input DTOs extend the base `ActionInput` (so every action inherits the
+     `idempotency_key` contract and JSON Schema generation for free).
+   - Domain events live in `App\Events` and are dispatched only from
+     `App\Actions` — never from services, controllers, or models. This keeps the
+     event seam (the one the agent layer and webhooks attach to) on the
+     unit-of-work boundary.
+   Each rule is a few lines of Pest; together they catch the violations that
+   namespaces alone won't.
+3. **`make:action` generator** is the enforcement seam, not just a convenience.
+   It scaffolds Action + Input DTO + Result + arch-test stub *with the boilerplate
+   already compliant*: the Input DTO extends `ActionInput` (idempotency key
+   wired), the Action resolves an `Actor`, opens the transaction, and returns an
+   `ActionResult`. Because the generated starting point already passes the arch
+   tests, the easy path is the correct path — drift takes deliberate effort, and
+   reviewers see a uniform shape on every action.
 
 PHPStan/Larastan runs at level 6 over `app`, `routes`, `database` (see
 `phpstan.neon`).
