@@ -1,11 +1,11 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/livewire-starter-kit",
+    "name": "cosmicspork/kriti",
     "type": "project",
-    "description": "The official Laravel starter kit for Livewire.",
+    "description": "A Laravel client-work management tool (accounting, tasks, time tracking), architected to expose every action as a tool for a future AI agent layer.",
     "keywords": [
         "laravel",
-        "framework"
+        "livewire"
     ],
     "license": "MIT",
     "require": {
@@ -19,6 +19,7 @@
     },
     "require-dev": {
         "fakerphp/faker": "^1.24",
+        "larastan/larastan": "^3.0",
         "laravel/boost": "^2.2",
         "laravel/pail": "^1.2.5",
         "laravel/pao": "^1.0.6",
