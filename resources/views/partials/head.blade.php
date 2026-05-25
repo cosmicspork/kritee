@@ -12,4 +12,15 @@
 @fonts
 
 @vite(['resources/css/app.css', 'resources/js/app.js'])
-@fluxAppearance
+
+{{-- Apply the persisted theme before first paint to avoid a flash of the wrong mode. --}}
+<script>
+    (() => {
+        const mode = (localStorage.getItem('theme-mode') || 'system').replaceAll('"', '');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const dark = mode === 'dark' || (mode === 'system' && prefersDark);
+        document.documentElement.setAttribute('data-theme', dark ? 'forest' : 'lemonade');
+        document.documentElement.classList.toggle('dark', dark);
+        document.documentElement.classList.toggle('light', !dark);
+    })();
+</script>

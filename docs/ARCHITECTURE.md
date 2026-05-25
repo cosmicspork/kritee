@@ -85,10 +85,13 @@ Livewire components, and do not mix. Read consistency comes from convention.
 - **Livewire + Alpine + Blade** for the product surface. The action layer maps
   directly to Livewire component methods.
 - **[Mary UI](https://mary-ui.com)** (free, MIT, daisyUI + Tailwind) is the
-  component vocabulary: forms, tables, modals, drawers, badges, buttons.
-- **Flux is being removed.** The scaffold shipped with `livewire/flux`; auth and
-  settings views are migrating to Mary UI, after which the dependency is dropped.
-  Do not build new screens with `<flux:*>`.
+  component vocabulary: forms, tables, modals, drawers, badges, buttons. The
+  daisyUI theme pair is `lemonade` (light) / `forest` (dark); the active mode is
+  persisted client-side (`theme-mode` in `localStorage`) and applied before paint
+  in `partials/head`.
+- **No Flux.** The scaffold shipped with `livewire/flux`; auth and settings views
+  were migrated to Mary UI and the dependency was dropped. Do not reintroduce
+  `<flux:*>`.
 - **Filament** is reserved for an internal admin slice only (user management, raw
   data inspection) — never the main UI.
 - **Kanban** is custom: Alpine Sort + Mary UI cards + a single Livewire method to
