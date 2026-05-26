@@ -51,9 +51,11 @@
             <x-button type="submit" label="{{ __('Log in') }}" class="btn-primary w-full" data-test="login-button" />
         </form>
 
-        <div class="text-center text-sm text-base-content/60">
-            <span>{{ __('Don\'t have an account?') }}</span>
-            <a href="{{ route('register') }}" class="link link-hover" wire:navigate>{{ __('Sign up') }}</a>
-        </div>
+        @if (Route::has('register'))
+            <div class="text-center text-sm text-base-content/60">
+                <span>{{ __('Don\'t have an account?') }}</span>
+                <a href="{{ route('register') }}" class="link link-hover" wire:navigate>{{ __('Sign up') }}</a>
+            </div>
+        @endif
     </div>
 </x-layouts::auth>

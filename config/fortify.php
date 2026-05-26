@@ -160,8 +160,10 @@ return [
     |
     */
 
-    'features' => [
-        Features::registration(),
+    'features' => array_filter([
+        // Public self-registration is invite-only by default; flip
+        // FORTIFY_REGISTRATION=true to reopen the signup route.
+        env('FORTIFY_REGISTRATION', false) ? Features::registration() : null,
         Features::resetPasswords(),
         Features::emailVerification(),
         Features::twoFactorAuthentication([
@@ -172,6 +174,6 @@ return [
         Features::passkeys([
             'confirmPassword' => true,
         ]),
-    ],
+    ]),
 
 ];
