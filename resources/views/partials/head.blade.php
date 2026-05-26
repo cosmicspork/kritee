@@ -26,11 +26,6 @@
         };
 
         applyTheme();
-
-        // wire:navigate swaps the page without re-running this script and morphs
-        // <html> back to the server markup, dropping the applied theme — so
-        // re-apply after each Livewire navigation. The listener is bound to the
-        // persistent document, so it survives navigations.
         document.addEventListener('livewire:navigated', applyTheme);
     })();
 </script>
