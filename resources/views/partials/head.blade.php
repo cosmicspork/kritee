@@ -16,11 +16,21 @@
 {{-- Apply the persisted theme before first paint to avoid a flash of the wrong mode. --}}
 <script>
     (() => {
-        const mode = (localStorage.getItem('theme-mode') || 'system').replaceAll('"', '');
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const dark = mode === 'dark' || (mode === 'system' && prefersDark);
-        document.documentElement.setAttribute('data-theme', dark ? 'forest' : 'lemonade');
-        document.documentElement.classList.toggle('dark', dark);
-        document.documentElement.classList.toggle('light', !dark);
+        const applyTheme = () => {
+            const mode = (localStorage.getItem('theme-mode') || 'system').replaceAll('"', '');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const dark = mode === 'dark' || (mode === 'system' && prefersDark);
+            document.documentElement.setAttribute('data-theme', dark ? 'forest' : 'lemonade');
+            document.documentElement.classList.toggle('dark', dark);
+            document.documentElement.classList.toggle('light', !dark);
+        };
+
+        applyTheme();
+
+        // wire:navigate swaps the page without re-running this script and morphs
+        // <html> back to the server markup, dropping the applied theme — so
+        // re-apply after each Livewire navigation. The listener is bound to the
+        // persistent document, so it survives navigations.
+        document.addEventListener('livewire:navigated', applyTheme);
     })();
 </script>
