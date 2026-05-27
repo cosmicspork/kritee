@@ -5,12 +5,6 @@ use App\Actions\Contracts\ActionInput;
 use App\Actions\Contracts\ActionResult;
 use Spatie\LaravelData\Data;
 
-// First architecture tests: the Action write-surface contract from
-// docs/ARCHITECTURE.md. Rules that have nothing to guard yet join as the code
-// they police lands — the service-layer rules (final, no transactions/events/
-// action imports) with the first service in step 6, the domain-event rule when
-// App\Events gains a class, and the actor carry-through rule in step 4.
-
 arch('the Action contract is an interface')
     ->expect(Action::class)
     ->toBeInterface();
