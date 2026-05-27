@@ -1,6 +1,6 @@
 # Architecture
 
-Kriti manages client work — accounting, tasks/kanban, time tracking. It ships
+Kritee manages client work — accounting, tasks/kanban, time tracking. It ships
 **without** AI features but is built so every write is a self-contained,
 idempotent, auditable unit that can later be exposed as a tool to an LLM agent.
 Designed for AI; not dependent on it.

@@ -11,7 +11,7 @@
                 <span class="flex size-10 items-center justify-center rounded-xl bg-primary text-primary-content">
                     <x-app-logo-icon class="size-6 fill-current" />
                 </span>
-                <span class="sr-only">{{ config('app.name', 'Kriti') }}</span>
+                <span class="sr-only">{{ config('app.name', 'Kritee') }}</span>
             </a>
 
             <div class="card w-full max-w-sm border border-base-300 bg-base-100 shadow-xl">
