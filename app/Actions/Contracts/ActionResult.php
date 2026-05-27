@@ -4,10 +4,6 @@ namespace App\Actions\Contracts;
 
 /**
  * Uniform result returned by every action.
- *
- * One shape for all callers (HTTP, CLI, jobs, future agent tools): a success
- * flag, an optional payload, and a list of errors. Build it through the named
- * constructors so the success/failure invariant cannot be set inconsistently.
  */
 final class ActionResult
 {
