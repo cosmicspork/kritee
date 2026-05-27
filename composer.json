@@ -1,6 +1,6 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "cosmicspork/kriti",
+    "name": "cosmicspork/kritee",
     "type": "project",
     "description": "A Laravel client-work management tool (accounting, tasks, time tracking), architected to expose every action as a tool for a future AI agent layer.",
     "keywords": [

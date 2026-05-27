@@ -58,7 +58,7 @@ RUN apt-get update && apt-get upgrade -y \
        php${PHP_VERSION}-pcov \
        php${PHP_VERSION}-xdebug \
     && echo "xdebug.mode=debug" >> /etc/php/${PHP_VERSION}/mods-available/xdebug.ini \
-    && echo "pcov.directory=/workspaces/kriti" >> /etc/php/${PHP_VERSION}/mods-available/pcov.ini \
+    && echo "pcov.directory=/workspaces/kritee" >> /etc/php/${PHP_VERSION}/mods-available/pcov.ini \
     && locale-gen en_US.UTF-8 \
     && curl -sLS https://getcomposer.org/installer | php -- --install-dir=/usr/bin/ --filename=composer \
     && apt-get -y autoremove \

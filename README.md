@@ -1,9 +1,14 @@
-# Kriti
+# Kritee
 
-[![tests](https://github.com/cosmicspork/kriti/actions/workflows/tests.yml/badge.svg)](https://github.com/cosmicspork/kriti/actions/workflows/tests.yml)
-[![linter](https://github.com/cosmicspork/kriti/actions/workflows/lint.yml/badge.svg)](https://github.com/cosmicspork/kriti/actions/workflows/lint.yml)
+[![tests](https://github.com/cosmicspork/kritee/actions/workflows/tests.yml/badge.svg)](https://github.com/cosmicspork/kritee/actions/workflows/tests.yml)
+[![linter](https://github.com/cosmicspork/kritee/actions/workflows/lint.yml/badge.svg)](https://github.com/cosmicspork/kritee/actions/workflows/lint.yml)
 
 A Laravel application for managing work — **accounting**, **tasks/kanban**, and **time tracking**.
+
+## About the name
+
+**Kritee** comes from the Hindi/Sanskrit word कृति (*kṛti*) — a "creation," "work," or "composition." It's
+sometimes romanised with an accented long *i* (*kṛti* / *kritī*), which is where the doubled-e spelling approximates the long final vowel. A tool for managing the work people make seemed like a fitting thing to name after the act of making.
 
 ## Stack
 
@@ -22,7 +27,7 @@ Open the repository in a Dev Container. It provisions PHP 8.5, bun, a local Post
 ### Local
 
 ```bash
-cp .env.example .env       # defaults to a local Postgres named "kriti"
+cp .env.example .env       # defaults to a local Postgres named "kritee"
 composer install
 bun install
 php artisan key:generate

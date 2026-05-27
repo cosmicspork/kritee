@@ -8,7 +8,7 @@ until pg_isready -h 127.0.0.1 -p 5432 -q; do
     sleep 1
 done
 
-createdb -h 127.0.0.1 -U ubuntu kriti 2>/dev/null || true
+createdb -h 127.0.0.1 -U ubuntu kritee 2>/dev/null || true
 
 [ -f .env ] || cp .env.example .env
 

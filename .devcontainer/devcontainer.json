@@ -1,5 +1,5 @@
 {
-  "name": "Kriti",
+  "name": "Kritee",
   "dockerFile": "./Dockerfile",
   "remoteUser": "ubuntu",
   "forwardPorts": [8000, 5173],
