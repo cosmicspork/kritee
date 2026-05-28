@@ -1,5 +1,8 @@
 <?php
 
+use App\Actors\Contracts\Actor;
+use App\Actors\UserActor;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -17,6 +20,9 @@ use Tests\TestCase;
 pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
     ->in('Feature');
+
+pest()->extend(TestCase::class)
+    ->in('Architecture');
 
 /*
 |--------------------------------------------------------------------------
@@ -44,7 +50,15 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+/**
+ * Bind a UserActor for the given (or a freshly created) user so actions
+ * resolving the Actor contract run as that user.
+ */
+function actAsUser(?User $user = null): User
 {
-    // ..
+    $user ??= User::factory()->create();
+
+    app()->instance(Actor::class, new UserActor($user));
+
+    return $user;
 }

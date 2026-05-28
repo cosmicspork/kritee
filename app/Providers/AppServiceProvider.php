@@ -4,7 +4,10 @@ namespace App\Providers;
 
 use App\Actors\Contracts\Actor;
 use App\Actors\SystemActor;
+use App\Actors\UserActor;
+use App\Models\User;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
@@ -17,7 +20,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->scoped(Actor::class, fn (): SystemActor => new SystemActor);
+        // The default actor follows the authenticated user when one exists, so
+        // requests resolve a UserActor without depending on middleware order;
+        // CLI, jobs, and agents override this binding with their own actor.
+        $this->app->scoped(Actor::class, function (): Actor {
+            $user = Auth::user();
+
+            return $user instanceof User ? new UserActor($user) : new SystemActor;
+        });
     }
 
     /**
