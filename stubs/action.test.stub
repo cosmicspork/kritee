@@ -1,0 +1,26 @@
+<?php
+
+use {{ namespacedActionClass }};
+use {{ namespacedInputClass }};
+use App\Actions\Contracts\ActionResult;
+use Illuminate\Support\Str;
+
+test('{{ actionTitle }} succeeds', function () {
+    $result = app({{ actionClass }}::class)
+        ->execute(new {{ inputClass }});
+
+    expect($result)->toBeInstanceOf(ActionResult::class)
+        ->and($result->success)->toBeTrue();
+});
+
+test('{{ actionTitle }} short-circuits a repeated idempotency key', function () {
+    $key = (string) Str::uuid();
+
+    $first = app({{ actionClass }}::class)
+        ->execute(new {{ inputClass }}(idempotencyKey: $key));
+
+    $second = app({{ actionClass }}::class)
+        ->execute(new {{ inputClass }}(idempotencyKey: $key));
+
+    expect($second)->toEqual($first);
+});

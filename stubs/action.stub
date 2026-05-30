@@ -1,0 +1,30 @@
+<?php
+
+namespace {{ namespace }};
+
+use App\Actions\Concerns\EnsuresIdempotency;
+use App\Actions\Contracts\Action;
+use App\Actions\Contracts\ActionInput;
+use App\Actions\Contracts\ActionResult;
+use App\Actors\Contracts\Actor;
+use Illuminate\Support\Facades\DB;
+
+class {{ class }} implements Action
+{
+    use EnsuresIdempotency;
+
+    public function __construct(private readonly Actor $actor) {}
+
+    public function execute(ActionInput $input): ActionResult
+    {
+        assert($input instanceof {{ class }}Input);
+
+        return $this->idempotently($input->idempotencyKey, function () use ($input): ActionResult {
+            return DB::transaction(function () use ($input): ActionResult {
+                // TODO: authorize $this->actor, call services, persist, fire events.
+
+                return ActionResult::success();
+            });
+        });
+    }
+}

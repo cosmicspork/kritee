@@ -1,0 +1,14 @@
+<?php
+
+namespace {{ namespace }};
+
+use App\Actions\Contracts\ActionInput;
+
+final class {{ class }} extends ActionInput
+{
+    public function __construct(
+        ?string $idempotencyKey = null,
+    ) {
+        parent::__construct($idempotencyKey);
+    }
+}

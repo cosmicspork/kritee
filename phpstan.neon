@@ -8,3 +8,16 @@ parameters:
         - app
         - database
         - routes
+
+    # Actor/idempotency scaffolding consumed by generated actions and the CLI/job
+    # wiring documented in docs/ARCHITECTURE.md. No concrete consumer lives in the
+    # analysed paths yet, so trait.unused fires until the first one is generated;
+    # reportUnmatched keeps the ignore silent once that happens.
+    ignoreErrors:
+        -
+            identifier: trait.unused
+            reportUnmatched: false
+            paths:
+                - app/Actions/Concerns/EnsuresIdempotency.php
+                - app/Console/Commands/Concerns/ResolvesActor.php
+                - app/Jobs/Concerns/ResolvesActor.php

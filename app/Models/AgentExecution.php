@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property AgentExecutionStatus $status
@@ -52,5 +53,15 @@ class AgentExecution extends Model
     public function triggeredBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'triggered_by');
+    }
+
+    /**
+     * The review queue items raised by this execution.
+     *
+     * @return HasMany<ReviewQueueItem, $this>
+     */
+    public function reviewQueueItems(): HasMany
+    {
+        return $this->hasMany(ReviewQueueItem::class);
     }
 }
