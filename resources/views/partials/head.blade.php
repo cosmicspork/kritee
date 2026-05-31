@@ -13,19 +13,21 @@
 
 @vite(['resources/css/app.css', 'resources/js/app.js'])
 
+@livewireStyles
+
 {{-- Apply the persisted theme before first paint to avoid a flash of the wrong mode. --}}
 <script>
-    (() => {
-        const applyTheme = () => {
-            const mode = (localStorage.getItem('theme-mode') || 'system').replaceAll('"', '');
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            const dark = mode === 'dark' || (mode === 'system' && prefersDark);
-            document.documentElement.setAttribute('data-theme', dark ? 'forest' : 'lemonade');
-            document.documentElement.classList.toggle('dark', dark);
-            document.documentElement.classList.toggle('light', !dark);
-        };
+    window.applyTheme = () => {
+        const mode = (localStorage.getItem('theme-mode') || 'system').replaceAll('"', '');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const dark = mode === 'dark' || (mode === 'system' && prefersDark);
+        document.documentElement.setAttribute('data-theme', dark ? 'forest' : 'lemonade');
+        document.documentElement.classList.toggle('dark', dark);
+        document.documentElement.classList.toggle('light', !dark);
+    };
 
-        applyTheme();
-        document.addEventListener('livewire:navigated', applyTheme);
-    })();
+    // First paint, plus a fallback for navigations restored from bf-cache (which
+    // skip the in-body re-apply below).
+    window.applyTheme();
+    document.addEventListener('livewire:navigated', window.applyTheme);
 </script>
