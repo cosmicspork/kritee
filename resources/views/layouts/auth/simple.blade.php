@@ -6,6 +6,10 @@
         @include('partials.head')
     </head>
     <body class="min-h-screen bg-base-200 font-sans text-base-content antialiased">
+        {{-- wire:navigate strips data-theme off <html> (the server markup has none); re-apply it
+             synchronously before the swapped-in body paints, or the chrome flashes the OS theme. --}}
+        <script>window.applyTheme?.()</script>
+
         <div class="flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
             <a href="{{ route('home') }}" class="flex flex-col items-center gap-2 font-medium" wire:navigate>
                 <span class="flex size-10 items-center justify-center rounded-xl bg-primary text-primary-content">
@@ -22,5 +26,7 @@
         </div>
 
         <x-toast />
+
+        @livewireScriptConfig
     </body>
 </html>
