@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             ExpenseSeeder::class,
             InvoiceSeeder::class,
             RoadmapSeeder::class,
+            DocumentSeeder::class,
         ]);
     }
 }
