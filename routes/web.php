@@ -8,6 +8,9 @@ Route::livewire('invitations/{token}', 'pages::invitations.accept')
     ->middleware('guest')
     ->name('invitations.accept');
 
+Route::livewire('roadmap', 'pages::roadmaps.public.index')->name('roadmap.index');
+Route::livewire('roadmap/{roadmap}', 'pages::roadmaps.public.show')->name('roadmap.show');
+
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('dashboard', 'dashboard')->name('dashboard');
 
