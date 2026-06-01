@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\RoadmapItemStatus;
 use Database\Factories\RoadmapItemFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -36,6 +37,16 @@ class RoadmapItem extends Model
             'sort_order' => 'integer',
             'is_public' => 'boolean',
         ];
+    }
+
+    /**
+     * Limit to items shared publicly.
+     *
+     * @param  Builder<RoadmapItem>  $query
+     */
+    public function scopePublic(Builder $query): void
+    {
+        $query->where('is_public', true);
     }
 
     /**

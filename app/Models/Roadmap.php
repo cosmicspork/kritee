@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\RoadmapStatus;
 use Database\Factories\RoadmapFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -31,6 +32,26 @@ class Roadmap extends Model
             'status' => RoadmapStatus::class,
             'is_public' => 'boolean',
         ];
+    }
+
+    /**
+     * Limit to roadmaps shared publicly.
+     *
+     * @param  Builder<Roadmap>  $query
+     */
+    public function scopePublic(Builder $query): void
+    {
+        $query->where('is_public', true);
+    }
+
+    /**
+     * Limit to active (non-archived) roadmaps.
+     *
+     * @param  Builder<Roadmap>  $query
+     */
+    public function scopeActive(Builder $query): void
+    {
+        $query->where('status', RoadmapStatus::Active);
     }
 
     /**
