@@ -37,6 +37,7 @@
                     <x-menu-item title="{{ __('Expenses') }}" icon="o-banknotes" route="expenses.index" />
                     <x-menu-item title="{{ __('Invoices') }}" icon="o-document-text" route="invoices.index" />
                     <x-menu-item title="{{ __('Roadmaps') }}" icon="o-map" route="roadmaps.index" />
+                    <x-menu-item title="{{ __('Documents') }}" icon="o-document" route="documents.index" />
                 </x-menu>
 
                 <x-menu class="mt-auto">

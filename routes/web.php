@@ -36,6 +36,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::livewire('roadmaps', 'pages::roadmaps.index')->name('roadmaps.index');
     Route::livewire('roadmaps/{roadmap}', 'pages::roadmaps.show')->name('roadmaps.show');
+
+    Route::livewire('documents', 'pages::documents.index')->name('documents.index');
+    Route::livewire('documents/create', 'pages::documents.create')->name('documents.create');
+    Route::livewire('documents/{document}', 'pages::documents.show')->name('documents.show');
+    Route::livewire('documents/{document}/edit', 'pages::documents.edit')->name('documents.edit');
 });
 
 require __DIR__.'/settings.php';
