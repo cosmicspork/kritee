@@ -24,6 +24,7 @@ class ExpenseFactory extends Factory
             'project_id' => null,
             'ticket_id' => null,
             'description' => $this->faker->sentence(),
+            'vendor' => $this->faker->company(),
             'amount' => $this->faker->randomFloat(2, 5, 2000),
             'incurred_on' => $this->faker->dateTimeBetween('-3 months')->format('Y-m-d'),
             'category' => $this->faker->optional()->word(),
