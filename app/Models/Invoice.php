@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Concerns\HasContentRef;
 use App\Enums\InvoiceStatus;
+use App\Models\Contracts\ContentReferenced;
 use Database\Factories\InvoiceFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -10,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Carbon;
 
 /**
  * @property InvoiceStatus $status
@@ -18,10 +21,28 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
     'invoice_number', 'client_id', 'status', 'issued_at', 'due_at', 'paid_at',
     'subtotal', 'tax_rate', 'tax_amount', 'total', 'notes', 'terms',
 ])]
-class Invoice extends Model
+class Invoice extends Model implements ContentReferenced
 {
+    use HasContentRef;
+
     /** @use HasFactory<InvoiceFactory> */
     use HasFactory;
+
+    /**
+     * {@inheritDoc}
+     *
+     * `invoice_number` already uniquely identifies an invoice; the `ref` is the
+     * uniform content key the shared trait gives every referenced model.
+     */
+    public function contentRefSource(): array
+    {
+        return [
+            $this->issued_at !== null ? Carbon::parse($this->issued_at)->format('Y-m-d') : '',
+            (string) ($this->client?->getAttribute('slug') ?? ''),
+            number_format((float) $this->total, 2, '.', ''),
+            (string) ($this->getAttribute('invoice_number') ?? ''),
+        ];
+    }
 
     /**
      * Get the attributes that should be cast.

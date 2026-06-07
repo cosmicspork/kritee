@@ -42,6 +42,7 @@ class RecordExpense implements Action
                     'project_id' => $input->projectId,
                     'ticket_id' => $input->ticketId,
                     'description' => $input->description,
+                    'vendor' => $input->vendor,
                     'amount' => $input->amount,
                     'incurred_on' => $input->incurredOn,
                     'category' => $input->category,

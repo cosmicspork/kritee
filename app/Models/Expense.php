@@ -2,21 +2,39 @@
 
 namespace App\Models;
 
+use App\Concerns\HasContentRef;
+use App\Models\Contracts\ContentReferenced;
 use Database\Factories\ExpenseFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Carbon;
 
 #[Fillable([
-    'user_id', 'client_id', 'project_id', 'ticket_id', 'description',
+    'user_id', 'client_id', 'project_id', 'ticket_id', 'description', 'vendor',
     'amount', 'incurred_on', 'category', 'is_billable', 'is_billed', 'notes',
 ])]
-class Expense extends Model
+class Expense extends Model implements ContentReferenced
 {
+    use HasContentRef;
+
     /** @use HasFactory<ExpenseFactory> */
     use HasFactory;
+
+    /**
+     * {@inheritDoc}
+     */
+    public function contentRefSource(): array
+    {
+        return [
+            Carbon::parse($this->incurred_on)->format('Y-m-d'),
+            (string) ($this->getAttribute('vendor') ?? ''),
+            (string) ($this->project?->getAttribute('slug') ?? ''),
+            number_format((float) $this->amount, 2, '.', ''),
+        ];
+    }
 
     /**
      * Get the attributes that should be cast.

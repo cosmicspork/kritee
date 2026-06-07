@@ -27,6 +27,7 @@ final class RecordExpenseInput extends ActionInput
         #[Required, Date]
         public readonly string $incurredOn,
         public readonly string $description = '',
+        public readonly ?string $vendor = null,
         public readonly ?int $clientId = null,
         public readonly ?int $projectId = null,
         public readonly ?int $ticketId = null,
