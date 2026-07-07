@@ -12,7 +12,7 @@ Route::livewire('roadmap', 'pages::roadmaps.public.index')->name('roadmap.index'
 Route::livewire('roadmap/{roadmap}', 'pages::roadmaps.public.show')->name('roadmap.show');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::view('dashboard', 'dashboard')->name('dashboard');
+    Route::livewire('dashboard', 'pages::dashboard.index')->name('dashboard');
 
     Route::livewire('clients', 'pages::clients.index')->name('clients.index');
     Route::livewire('clients/{client}', 'pages::clients.show')->name('clients.show');
