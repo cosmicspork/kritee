@@ -1,6 +1,7 @@
 <?php
 
 use App\Actors\Contracts\Actor;
+use App\Actors\SystemActor;
 use App\Actors\UserActor;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -61,4 +62,13 @@ function actAsUser(?User $user = null): User
     app()->instance(Actor::class, new UserActor($user));
 
     return $user;
+}
+
+/**
+ * Bind the SystemActor so actions resolving the Actor contract run as
+ * scheduled/CLI system work.
+ */
+function actAsSystem(): void
+{
+    app()->instance(Actor::class, new SystemActor);
 }

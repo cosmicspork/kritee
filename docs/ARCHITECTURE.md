@@ -69,6 +69,14 @@ requested the action. Wiring per caller:
   otherwise `SystemActor`.
 - **Agents** — `AgentActor` wrapping the originating `AgentExecution`.
 
+Current wiring: `UserActor` runs HTTP (via `ResolveActor` middleware) and
+user-flagged CLI; `SystemActor` runs scheduled work — `invoices:mark-overdue`
+is its first consumer, bound through the console `ResolvesActor` concern.
+`AgentActor`, `AgentExecution`, and `ReviewQueueItem` are scaffolding for the
+deferred agent layer and stay deliberately unwired until it arrives. Actions
+that create user-owned records (e.g. the ledger import) require a `UserActor`
+even from the CLI: ownership and authorization both need a user.
+
 **Authorization lives inside the action**, not the controller. Call policies from
 the action. Controller-side gates don't fire for jobs, CLI, or agents, so they
 are not a security boundary in a multi-caller architecture.
