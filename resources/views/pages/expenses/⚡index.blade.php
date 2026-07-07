@@ -139,6 +139,7 @@ new #[Layout('layouts::app'), Title('Expenses')] class extends Component {
             <p class="text-base-content/70">{{ __('No expenses recorded yet.') }}</p>
         </x-card>
     @else
+        <div class="overflow-x-auto">
         <table class="table" data-test="expenses-table">
             <thead>
                 <tr>
@@ -158,7 +159,7 @@ new #[Layout('layouts::app'), Title('Expenses')] class extends Component {
                         <td>{{ $expense->description ?: '—' }}</td>
                         <td class="text-base-content/70">{{ $expense->client?->name ?? '—' }}</td>
                         <td class="text-base-content/70">{{ $expense->category ?? '—' }}</td>
-                        <td class="text-end font-mono">{{ number_format((float) $expense->amount, 2) }}</td>
+                        <td class="text-end font-mono">{{ \App\Services\Support\MoneyFormatter::format($expense->amount) }}</td>
                         <td>
                             @if ($expense->is_billable)
                                 <x-badge :value="__('Billable')" class="badge-soft badge-success" />
@@ -189,6 +190,7 @@ new #[Layout('layouts::app'), Title('Expenses')] class extends Component {
                 @endforeach
             </tbody>
         </table>
+        </div>
 
         <div>{{ $this->expenses->links() }}</div>
     @endif

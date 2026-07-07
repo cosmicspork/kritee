@@ -38,7 +38,7 @@ test('it lists invoices with their client and total', function () {
         ->test('pages::invoices.index')
         ->assertSee('INV-2026-0001')
         ->assertSee('Acme Co')
-        ->assertSee('1234.00')
+        ->assertSee('$1,234.00')
         ->assertSeeHtml('data-test="invoice-link-'.$invoice->id.'"');
 });
 

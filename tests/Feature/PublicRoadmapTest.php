@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\RoadmapItemStatus;
 use App\Models\Roadmap;
 use App\Models\RoadmapItem;
 
@@ -25,6 +26,17 @@ test('the detail page shows public items but hides private ones', function () {
         ->assertSee('Shared roadmap')
         ->assertSee('Visible milestone')
         ->assertDontSee('Hidden milestone');
+});
+
+test('the detail page groups items by status, in-progress first', function () {
+    $roadmap = Roadmap::factory()->public()->create();
+    RoadmapItem::factory()->for($roadmap)->create(['title' => 'Next up', 'is_public' => true, 'status' => RoadmapItemStatus::Planned]);
+    RoadmapItem::factory()->for($roadmap)->create(['title' => 'Underway', 'is_public' => true, 'status' => RoadmapItemStatus::InProgress]);
+    RoadmapItem::factory()->for($roadmap)->create(['title' => 'Delivered', 'is_public' => true, 'status' => RoadmapItemStatus::Completed]);
+
+    $this->get(route('roadmap.show', $roadmap))
+        ->assertOk()
+        ->assertSeeInOrder(['In progress', 'Underway', 'Planned', 'Next up', 'Completed', 'Delivered']);
 });
 
 test('a private roadmap is not reachable publicly', function () {
