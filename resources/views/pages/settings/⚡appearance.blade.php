@@ -19,7 +19,7 @@ new #[Title('Appearance settings')] class extends Component {
                 apply() {
                     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
                     const dark = this.mode === 'dark' || (this.mode === 'system' && prefersDark);
-                    document.documentElement.setAttribute('data-theme', dark ? 'forest' : 'lemonade');
+                    document.documentElement.setAttribute('data-theme', dark ? 'irongall' : 'khata');
                     document.documentElement.classList.toggle('dark', dark);
                     document.documentElement.classList.toggle('light', !dark);
                 },

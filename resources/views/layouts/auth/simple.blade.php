@@ -12,9 +12,7 @@
 
         <div class="flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
             <a href="{{ route('home') }}" class="flex flex-col items-center gap-2 font-medium" wire:navigate>
-                <span class="flex size-10 items-center justify-center rounded-xl bg-primary text-primary-content">
-                    <x-app-logo-icon class="size-6 fill-current" />
-                </span>
+                <x-app-logo-icon class="size-10" />
                 <span class="sr-only">{{ config('app.name', 'Kritee') }}</span>
             </a>
 
