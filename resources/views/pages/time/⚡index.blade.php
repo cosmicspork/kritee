@@ -371,6 +371,7 @@ new #[Title('Time')] class extends Component {
                 <p class="text-center text-base-content/60">{{ __('No time logged yet.') }}</p>
             </x-card>
         @else
+            <div class="overflow-x-auto">
             <table class="table" data-test="entries-table">
                 <thead>
                     <tr>
@@ -388,7 +389,7 @@ new #[Title('Time')] class extends Component {
                             <td>{{ $entry->description ?: __('Untitled') }}</td>
                             <td class="text-base-content/70">{{ $entry->client?->name ?? '—' }}</td>
                             <td class="text-base-content/70">{{ $entry->project?->name ?? '—' }}</td>
-                            <td>{{ __(':minutes min', ['minutes' => $entry->duration_minutes]) }}</td>
+                            <td class="font-mono">{{ \App\Services\Support\DurationFormatter::minutes($entry->duration_minutes) }}</td>
                             <td>
                                 @if ($entry->is_billable)
                                     <x-badge :value="__('Billable')" class="badge-soft badge-success" />
@@ -401,6 +402,7 @@ new #[Title('Time')] class extends Component {
                                     icon="o-pencil-square"
                                     wire:click="editEntry({{ $entry->id }})"
                                     class="btn-ghost btn-sm"
+                                    :title="__('Edit')"
                                     data-test="edit-entry-{{ $entry->id }}"
                                 />
                                 <x-button
@@ -408,6 +410,7 @@ new #[Title('Time')] class extends Component {
                                     wire:click="deleteEntry({{ $entry->id }})"
                                     wire:confirm="{{ __('Delete this time entry?') }}"
                                     class="btn-ghost btn-sm text-error"
+                                    :title="__('Delete')"
                                     data-test="delete-entry-{{ $entry->id }}"
                                 />
                             </td>
@@ -415,6 +418,7 @@ new #[Title('Time')] class extends Component {
                     @endforeach
                 </tbody>
             </table>
+            </div>
         @endif
     </div>
 

@@ -73,6 +73,7 @@ new #[Layout('layouts::app.sidebar'), Title('Invoices')] class extends Component
                 {{ __('No invoices yet. Draft your first one to get started.') }}
             </div>
         @else
+            <div class="overflow-x-auto">
             <table class="table" data-test="invoices-table">
                 <thead>
                     <tr>
@@ -100,10 +101,11 @@ new #[Layout('layouts::app.sidebar'), Title('Invoices')] class extends Component
                                 ])" />
                             </td>
                             <td class="text-base-content/70">{{ $invoice->issued_at?->toFormattedDateString() ?? __('—') }}</td>
-                            <td class="text-end font-mono">{{ $invoice->total }}</td>
+                            <td class="text-end font-mono">{{ \App\Services\Support\MoneyFormatter::format($invoice->total) }}</td>
                         </tr>
                     @endforeach
                 </tbody>
             </table>
+            </div>
         @endif
     </div>

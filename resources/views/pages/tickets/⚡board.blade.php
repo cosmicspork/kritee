@@ -410,6 +410,7 @@ new #[Layout('layouts::app.sidebar'), Title('Board')] class extends Component {
                                             icon="o-pencil-square"
                                             wire:click="edit({{ $ticket->id }})"
                                             class="btn-ghost btn-xs btn-circle"
+                                            :tooltip="__('Edit')"
                                             data-test="edit-ticket-{{ $ticket->id }}"
                                         />
                                     </div>

@@ -156,6 +156,7 @@ new #[Layout('layouts::app.sidebar'), Title('Invoice')] class extends Component 
         </div>
 
         <x-card>
+            <div class="overflow-x-auto">
             <table class="table" data-test="line-items-table">
                 <thead>
                     <tr>
@@ -170,8 +171,8 @@ new #[Layout('layouts::app.sidebar'), Title('Invoice')] class extends Component 
                         <tr wire:key="line-{{ $item->id }}">
                             <td>{{ $item->description }}</td>
                             <td class="text-end font-mono">{{ $item->quantity }}</td>
-                            <td class="text-end font-mono">{{ $item->unit_price }}</td>
-                            <td class="text-end font-mono">{{ $item->amount }}</td>
+                            <td class="text-end font-mono">{{ \App\Services\Support\MoneyFormatter::format($item->unit_price) }}</td>
+                            <td class="text-end font-mono">{{ \App\Services\Support\MoneyFormatter::format($item->amount) }}</td>
                         </tr>
                     @empty
                         <tr>
@@ -187,20 +188,21 @@ new #[Layout('layouts::app.sidebar'), Title('Invoice')] class extends Component 
                 <tfoot>
                     <tr>
                         <td colspan="3" class="text-end font-medium">{{ __('Subtotal') }}</td>
-                        <td class="text-end font-mono" data-test="invoice-subtotal">{{ $invoice->subtotal }}</td>
+                        <td class="text-end font-mono" data-test="invoice-subtotal">{{ \App\Services\Support\MoneyFormatter::format($invoice->subtotal) }}</td>
                     </tr>
                     @if ($invoice->tax_amount !== null)
                         <tr>
                             <td colspan="3" class="text-end text-base-content/70">{{ __('Tax') }}</td>
-                            <td class="text-end font-mono">{{ $invoice->tax_amount }}</td>
+                            <td class="text-end font-mono">{{ \App\Services\Support\MoneyFormatter::format($invoice->tax_amount) }}</td>
                         </tr>
                     @endif
                     <tr>
                         <td colspan="3" class="text-end text-lg font-semibold">{{ __('Total') }}</td>
-                        <td class="text-end font-mono text-lg font-semibold" data-test="invoice-total">{{ $invoice->total }}</td>
+                        <td class="text-end font-mono text-lg font-semibold" data-test="invoice-total">{{ \App\Services\Support\MoneyFormatter::format($invoice->total) }}</td>
                     </tr>
                 </tfoot>
             </table>
+            </div>
         </x-card>
 
         @if ($invoice->notes || $invoice->terms)
