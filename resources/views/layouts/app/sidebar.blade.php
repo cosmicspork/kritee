@@ -44,13 +44,7 @@
                     <x-menu-item
                         title="{{ __('Repository') }}"
                         icon="o-code-bracket"
-                        link="https://github.com/laravel/livewire-starter-kit"
-                        external
-                    />
-                    <x-menu-item
-                        title="{{ __('Documentation') }}"
-                        icon="o-book-open"
-                        link="https://laravel.com/docs/starter-kits#livewire"
+                        link="https://github.com/cosmicspork/kritee"
                         external
                     />
                 </x-menu>

@@ -86,9 +86,13 @@ Livewire components, and do not mix. Read consistency comes from convention.
   directly to Livewire component methods.
 - **[Mary UI](https://mary-ui.com)** (free, MIT, daisyUI + Tailwind) is the
   component vocabulary: forms, tables, modals, drawers, badges, buttons. The
-  daisyUI theme pair is `lemonade` (light) / `forest` (dark); the active mode is
-  persisted client-side (`theme-mode` in `localStorage`) and applied before paint
-  in `partials/head`.
+  daisyUI theme pair is the custom `khata` (light: warm paper, ink text, marigold
+  primary) / `irongall` (dark: blue-black ink ground), defined in
+  `resources/css/app.css`; the active mode is persisted client-side (`theme-mode`
+  in `localStorage`) and applied before paint in `partials/head`. Madder red
+  (`--madder`) is structural (the ledger margin rule), never a control color.
+  Display face is Fraunces (`font-serif`), body is Instrument Sans, data is
+  Spline Sans Mono (`font-mono`), all served via the Vite Bunny Fonts plugin.
 - **No Flux.** The scaffold shipped with `livewire/flux`; auth and settings views
   were migrated to Mary UI and the dependency was dropped. Do not reintroduce
   `<flux:*>`.

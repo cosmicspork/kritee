@@ -8,11 +8,74 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @plugin "daisyui" {
-    themes: lemonade --default, forest --prefersdark;
+    themes: khata --default, irongall --prefersdark;
+}
+
+/* Khata (light): the account book — warm paper, ink text, marigold primary.
+   Madder red is structural (the ledger margin rule), never a control color. */
+@plugin "daisyui/theme" {
+    name: 'khata';
+    default: true;
+    color-scheme: light;
+
+    --color-base-100: #fffdf8;
+    --color-base-200: #f6f3ea;
+    --color-base-300: #e3ddcc;
+    --color-base-content: #23201a;
+    --color-primary: #e4a22c;
+    --color-primary-content: #231f14;
+    --color-secondary: #33475c;
+    --color-secondary-content: #f6f3ea;
+    --color-accent: #8f6408;
+    --color-accent-content: #fffdf8;
+    --color-neutral: #2a2620;
+    --color-neutral-content: #f6f3ea;
+    --color-info: #3e6c8e;
+    --color-info-content: #fffdf8;
+    --color-success: #3e7c4f;
+    --color-success-content: #fffdf8;
+    --color-warning: #b97f10;
+    --color-warning-content: #fffdf8;
+    --color-error: #b23b2e;
+    --color-error-content: #fffdf8;
+
+    --madder: #a93b2a;
+}
+
+/* Iron-gall (dark): the same book by lamplight — blue-black ink ground, paper text. */
+@plugin "daisyui/theme" {
+    name: 'irongall';
+    prefersdark: true;
+    color-scheme: dark;
+
+    --color-base-100: #1a1f2b;
+    --color-base-200: #131720;
+    --color-base-300: #2a3140;
+    --color-base-content: #e8e2d2;
+    --color-primary: #edb44e;
+    --color-primary-content: #221c0e;
+    --color-secondary: #93a8be;
+    --color-secondary-content: #131720;
+    --color-accent: #d9a94a;
+    --color-accent-content: #221c0e;
+    --color-neutral: #0e1219;
+    --color-neutral-content: #e8e2d2;
+    --color-info: #7fa8c9;
+    --color-info-content: #10141c;
+    --color-success: #6fae7f;
+    --color-success-content: #10141c;
+    --color-warning: #d9a94a;
+    --color-warning-content: #221c0e;
+    --color-error: #d3705d;
+    --color-error-content: #2a1d1b;
+
+    --madder: #c05b48;
 }
 
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-serif: 'Fraunces', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+    --font-mono: 'Spline Sans Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 /* Laravel's default paginator markup, restyled to match daisyUI. */
