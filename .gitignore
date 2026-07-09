@@ -28,5 +28,6 @@ yarn-error.log
 .mcp.json
 AGENTS.md
 boost.json
+/.worktrees
 CLAUDE.md
 opencode.json
