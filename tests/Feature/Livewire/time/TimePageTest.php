@@ -232,6 +232,28 @@ test('a failed action surfaces its error and changes nothing', function () {
     expect(TimeEntry::find($entry->getKey()))->not->toBeNull();
 });
 
+test('entries show their work date from started_at', function () {
+    $user = actOnTimePage();
+
+    $datedEntry = TimeEntry::factory()->for($user)->create([
+        'description' => 'Discovery workshop',
+        'started_at' => \Carbon\CarbonImmutable::parse('2026-05-28 09:15:00'),
+        'ended_at' => \Carbon\CarbonImmutable::parse('2026-05-28 10:00:00'),
+        'duration_minutes' => 45,
+    ]);
+
+    $manualEntry = TimeEntry::factory()->for($user)->create([
+        'description' => 'Backfilled admin',
+        'started_at' => null,
+        'ended_at' => null,
+        'duration_minutes' => 30,
+    ]);
+
+    Livewire::test('pages::time.index')
+        ->assertSeeHtml('data-test="entry-date-'.$datedEntry->getKey().'">2026-05-28</td>')
+        ->assertSeeHtml('data-test="entry-date-'.$manualEntry->getKey().'">—</td>');
+});
+
 test('a user only sees their own entries', function () {
     $user = actOnTimePage();
     $other = User::factory()->create();

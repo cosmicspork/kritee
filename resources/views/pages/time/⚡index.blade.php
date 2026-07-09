@@ -419,6 +419,7 @@ new #[Title('Time')] class extends Component {
                 <thead>
                     <tr>
                         <th>{{ __('Description') }}</th>
+                        <th>{{ __('Date') }}</th>
                         <th>{{ __('Client') }}</th>
                         <th>{{ __('Project') }}</th>
                         <th>{{ __('Duration') }}</th>
@@ -430,6 +431,7 @@ new #[Title('Time')] class extends Component {
                     @foreach ($this->entries as $entry)
                         <tr wire:key="entry-{{ $entry->id }}">
                             <td>{{ $entry->description ?: __('Untitled') }}</td>
+                            <td data-test="entry-date-{{ $entry->id }}">{{ $entry->started_at?->toDateString() ?? '—' }}</td>
                             <td class="text-base-content/70">{{ $entry->client?->name ?? '—' }}</td>
                             <td class="text-base-content/70">{{ $entry->project?->name ?? '—' }}</td>
                             <td class="font-mono">{{ \App\Services\Support\DurationFormatter::minutes($entry->duration_minutes) }}</td>
