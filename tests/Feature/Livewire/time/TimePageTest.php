@@ -86,12 +86,14 @@ test('stopping the timer invokes StopTimer and closes the entry', function () {
         ->and($running->duration_minutes)->toBeGreaterThan(0);
 });
 
-test('recording a manual entry invokes RecordManualTimeEntry', function () {
+test('recording a manual entry persists the selected start and derived end time', function () {
     $user = actOnTimePage();
 
     Livewire::test('pages::time.index')
-        ->set('manualDurationMinutes', 45)
+        ->set('manualStartedAt', '2026-05-21T09:30')
+        ->set('manualDurationMinutes', 60)
         ->set('manualDescription', 'Client call')
+        ->set('manualIsBillable', false)
         ->call('recordManualEntry')
         ->assertHasNoErrors()
         ->assertSee('Client call');
@@ -99,8 +101,25 @@ test('recording a manual entry invokes RecordManualTimeEntry', function () {
     $entry = TimeEntry::sole();
 
     expect($entry->user_id)->toBe($user->getKey())
-        ->and($entry->duration_minutes)->toBe(45)
-        ->and($entry->is_billable)->toBeTrue();
+        ->and($entry->started_at->toDateTimeString())->toBe('2026-05-21 09:30:00')
+        ->and($entry->ended_at->toDateTimeString())->toBe('2026-05-21 10:30:00')
+        ->and($entry->duration_minutes)->toBe(60)
+        ->and($entry->is_billable)->toBeFalse();
+});
+
+test('a manual entry requires a start datetime', function () {
+    actOnTimePage();
+
+    $this->mock(RecordManualTimeEntry::class)->shouldNotReceive('execute');
+
+    Livewire::test('pages::time.index')
+        ->set('manualStartedAt', '')
+        ->set('manualDurationMinutes', 30)
+        ->set('manualDescription', 'Client call')
+        ->call('recordManualEntry')
+        ->assertHasErrors(['manualStartedAt' => ['required']]);
+
+    expect(TimeEntry::count())->toBe(0);
 });
 
 test('a non-positive manual duration fails validation before the action runs', function () {

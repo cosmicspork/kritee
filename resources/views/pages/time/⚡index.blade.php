@@ -13,6 +13,7 @@ use App\Actions\TimeEntry\UpdateTimeEntryInput;
 use App\Models\Client;
 use App\Models\Project;
 use App\Models\TimeEntry;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
@@ -28,6 +29,7 @@ new #[Title('Time')] class extends Component {
     public bool $timerIsBillable = true;
 
     public int $manualDurationMinutes = 0;
+    public string $manualStartedAt = '';
     public string $manualDescription = '';
     public ?int $manualClientId = null;
     public ?int $manualProjectId = null;
@@ -144,9 +146,13 @@ new #[Title('Time')] class extends Component {
     public function recordManualEntry(RecordManualTimeEntry $recordManualTimeEntry): void
     {
         $this->validate([
+            'manualStartedAt' => ['required', 'date_format:Y-m-d\\TH:i'],
             'manualDurationMinutes' => ['required', 'integer', 'min:1'],
             'manualDescription' => ['nullable', 'string', 'max:2000'],
         ]);
+
+        $startedAt = $this->parseDatetimeLocal($this->manualStartedAt);
+        $endedAt = $this->derivedEndAt($this->manualStartedAt, $this->manualDurationMinutes);
 
         $result = $recordManualTimeEntry->execute(new RecordManualTimeEntryInput(
             durationMinutes: $this->manualDurationMinutes,
@@ -154,6 +160,8 @@ new #[Title('Time')] class extends Component {
             clientId: $this->manualClientId,
             description: $this->manualDescription !== '' ? $this->manualDescription : null,
             isBillable: $this->manualIsBillable,
+            startedAt: $startedAt->toDateTimeString(),
+            endedAt: $endedAt->toDateTimeString(),
         ));
 
         if (! $result->success) {
@@ -162,7 +170,7 @@ new #[Title('Time')] class extends Component {
             return;
         }
 
-        $this->reset('manualDurationMinutes', 'manualDescription', 'manualClientId', 'manualProjectId');
+        $this->reset('manualDurationMinutes', 'manualStartedAt', 'manualDescription', 'manualClientId', 'manualProjectId');
         $this->manualIsBillable = true;
         unset($this->entries);
 
@@ -226,6 +234,23 @@ new #[Title('Time')] class extends Component {
         unset($this->entries);
 
         $this->success(__('Time entry deleted.'));
+    }
+
+    private function parseDatetimeLocal(string $value): CarbonImmutable
+    {
+        return CarbonImmutable::createFromFormat('Y-m-d\\TH:i', $value);
+    }
+
+    private function datetimeLocalValue(?DateTimeInterface $dateTime): string
+    {
+        return $dateTime === null
+            ? ''
+            : CarbonImmutable::instance($dateTime)->format('Y-m-d\\TH:i');
+    }
+
+    private function derivedEndAt(string $startedAt, int $durationMinutes): CarbonImmutable
+    {
+        return $this->parseDatetimeLocal($startedAt)->addMinutes($durationMinutes);
     }
 
     /**
@@ -313,6 +338,14 @@ new #[Title('Time')] class extends Component {
 
     <x-card :title="__('Log time')" :subtitle="__('Record a completed block of time')">
         <form wire:submit="recordManualEntry" class="grid gap-4 sm:grid-cols-2">
+            <x-input
+                wire:model="manualStartedAt"
+                label="{{ __('Start') }}"
+                type="datetime-local"
+                required
+                data-test="manual-started-at"
+            />
+
             <x-input
                 wire:model="manualDurationMinutes"
                 label="{{ __('Duration (minutes)') }}"
