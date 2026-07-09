@@ -135,10 +135,48 @@ test('a non-positive manual duration fails validation before the action runs', f
     expect(TimeEntry::count())->toBe(0);
 });
 
-test('editing an entry invokes UpdateTimeEntry', function () {
+test('editing an entry pre-fills the start datetime for a datetime-local input', function () {
     $user = actOnTimePage();
 
     $entry = TimeEntry::factory()->for($user)->create([
+        'started_at' => '2026-05-21 09:30:00',
+        'ended_at' => '2026-05-21 10:30:00',
+        'duration_minutes' => 60,
+        'description' => 'Original',
+    ]);
+
+    Livewire::test('pages::time.index')
+        ->call('editEntry', $entry->getKey())
+        ->assertSet('showEditModal', true)
+        ->assertSet('editStartedAt', '2026-05-21T09:30')
+        ->assertSet('editDurationMinutes', 60)
+        ->assertSet('editDescription', 'Original');
+});
+
+test('editing a dateless entry pre-fills the start datetime from when it was created', function () {
+    $user = actOnTimePage();
+
+    $entry = TimeEntry::factory()->for($user)->create([
+        'started_at' => null,
+        'ended_at' => null,
+        'duration_minutes' => 45,
+        'created_at' => '2026-05-20 08:45:17',
+        'updated_at' => '2026-05-20 09:00:00',
+    ]);
+
+    Livewire::test('pages::time.index')
+        ->call('editEntry', $entry->getKey())
+        ->assertSet('showEditModal', true)
+        ->assertSet('editStartedAt', '2026-05-20T08:45')
+        ->assertSet('editDurationMinutes', 45);
+});
+
+test('saving an edited entry persists the selected start and derived end time', function () {
+    $user = actOnTimePage();
+
+    $entry = TimeEntry::factory()->for($user)->create([
+        'started_at' => '2026-05-21 09:00:00',
+        'ended_at' => '2026-05-21 09:30:00',
         'duration_minutes' => 30,
         'description' => 'Original',
         'is_billable' => true,
@@ -147,9 +185,9 @@ test('editing an entry invokes UpdateTimeEntry', function () {
     Livewire::test('pages::time.index')
         ->call('editEntry', $entry->getKey())
         ->assertSet('showEditModal', true)
-        ->assertSet('editDurationMinutes', 30)
+        ->set('editStartedAt', '2026-05-22T14:15')
+        ->set('editDurationMinutes', 75)
         ->set('editDescription', 'Revised')
-        ->set('editDurationMinutes', 90)
         ->set('editIsBillable', false)
         ->call('saveEntry')
         ->assertHasNoErrors()
@@ -157,7 +195,9 @@ test('editing an entry invokes UpdateTimeEntry', function () {
 
     $entry->refresh();
 
-    expect($entry->duration_minutes)->toBe(90)
+    expect($entry->started_at->toDateTimeString())->toBe('2026-05-22 14:15:00')
+        ->and($entry->ended_at->toDateTimeString())->toBe('2026-05-22 15:30:00')
+        ->and($entry->duration_minutes)->toBe(75)
         ->and($entry->description)->toBe('Revised')
         ->and($entry->is_billable)->toBeFalse();
 });

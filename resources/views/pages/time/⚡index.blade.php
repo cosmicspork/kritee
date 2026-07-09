@@ -14,6 +14,7 @@ use App\Models\Client;
 use App\Models\Project;
 use App\Models\TimeEntry;
 use Carbon\CarbonImmutable;
+use DateTimeInterface as NativeDateTimeInterface;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
@@ -38,6 +39,7 @@ new #[Title('Time')] class extends Component {
     public bool $showEditModal = false;
     public ?int $editingId = null;
     public int $editDurationMinutes = 0;
+    public string $editStartedAt = '';
     public string $editDescription = '';
     public bool $editIsBillable = true;
 
@@ -57,7 +59,7 @@ new #[Title('Time')] class extends Component {
 
     /**
      * The user's logged entries, newest first. Excludes only an open timer
-     * (started but not yet ended); manually logged entries carry no start time.
+     * (started but not yet ended); manual entries include an explicit start time.
      *
      * @return \Illuminate\Database\Eloquent\Collection<int, TimeEntry>
      */
@@ -184,6 +186,7 @@ new #[Title('Time')] class extends Component {
             ->findOrFail($entryId);
 
         $this->editingId = $entry->getKey();
+        $this->editStartedAt = $this->datetimeLocalValue($entry->started_at ?? $entry->created_at ?? now());
         $this->editDurationMinutes = $entry->duration_minutes;
         $this->editDescription = $entry->description ?? '';
         $this->editIsBillable = $entry->is_billable;
@@ -197,15 +200,21 @@ new #[Title('Time')] class extends Component {
         }
 
         $this->validate([
+            'editStartedAt' => ['required', 'date_format:Y-m-d\\TH:i'],
             'editDurationMinutes' => ['required', 'integer', 'min:1'],
             'editDescription' => ['nullable', 'string', 'max:2000'],
         ]);
+
+        $startedAt = $this->parseDatetimeLocal($this->editStartedAt);
+        $endedAt = $this->derivedEndAt($this->editStartedAt, $this->editDurationMinutes);
 
         $result = $updateTimeEntry->execute(new UpdateTimeEntryInput(
             timeEntryId: $this->editingId,
             description: $this->editDescription !== '' ? $this->editDescription : null,
             durationMinutes: $this->editDurationMinutes,
             isBillable: $this->editIsBillable,
+            startedAt: $startedAt->toDateTimeString(),
+            endedAt: $endedAt->toDateTimeString(),
         ));
 
         if (! $result->success) {
@@ -216,6 +225,7 @@ new #[Title('Time')] class extends Component {
 
         $this->showEditModal = false;
         $this->editingId = null;
+        $this->editStartedAt = '';
         unset($this->entries);
 
         $this->success(__('Time entry updated.'));
@@ -241,7 +251,7 @@ new #[Title('Time')] class extends Component {
         return CarbonImmutable::createFromFormat('Y-m-d\\TH:i', $value);
     }
 
-    private function datetimeLocalValue(?DateTimeInterface $dateTime): string
+    private function datetimeLocalValue(?NativeDateTimeInterface $dateTime): string
     {
         return $dateTime === null
             ? ''
@@ -462,6 +472,14 @@ new #[Title('Time')] class extends Component {
                 label="{{ __('Description') }}"
                 placeholder="{{ __('What did you do?') }}"
                 data-test="edit-description"
+            />
+
+            <x-input
+                wire:model="editStartedAt"
+                label="{{ __('Start') }}"
+                type="datetime-local"
+                required
+                data-test="edit-started-at"
             />
 
             <x-input
