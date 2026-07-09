@@ -4,6 +4,7 @@ use App\Actions\Contracts\ActionResult;
 use App\Actions\TimeEntry\DeleteTimeEntry;
 use App\Actions\TimeEntry\RecordManualTimeEntry;
 use App\Actions\TimeEntry\StartTimer;
+use App\Actions\TimeEntry\UpdateTimeEntry;
 use App\Models\TimeEntry;
 use App\Models\User;
 use Livewire\Livewire;
@@ -200,6 +201,62 @@ test('saving an edited entry persists the selected start and derived end time', 
         ->and($entry->duration_minutes)->toBe(75)
         ->and($entry->description)->toBe('Revised')
         ->and($entry->is_billable)->toBeFalse();
+});
+
+test('saving an edited entry requires a start datetime', function () {
+    $user = actOnTimePage();
+
+    $entry = TimeEntry::factory()->for($user)->create([
+        'started_at' => '2026-05-21 09:30:00',
+        'ended_at' => '2026-05-21 10:00:00',
+        'duration_minutes' => 30,
+        'description' => 'Original',
+    ]);
+
+    $originalStartedAt = $entry->started_at->toDateTimeString();
+    $originalEndedAt = $entry->ended_at->toDateTimeString();
+
+    $this->mock(UpdateTimeEntry::class)->shouldNotReceive('execute');
+
+    Livewire::test('pages::time.index')
+        ->call('editEntry', $entry->getKey())
+        ->set('editStartedAt', '')
+        ->call('saveEntry')
+        ->assertHasErrors(['editStartedAt' => ['required']]);
+
+    $entry->refresh();
+
+    expect($entry->started_at->toDateTimeString())->toBe($originalStartedAt)
+        ->and($entry->ended_at->toDateTimeString())->toBe($originalEndedAt)
+        ->and($entry->duration_minutes)->toBe(30)
+        ->and($entry->description)->toBe('Original');
+});
+
+test('saving an edited entry preserves sub-minute start precision when the displayed start is unchanged', function () {
+    $user = actOnTimePage();
+
+    $entry = TimeEntry::factory()->for($user)->create([
+        'started_at' => '2026-05-21 09:30:45',
+        'ended_at' => '2026-05-21 10:00:45',
+        'duration_minutes' => 30,
+        'description' => 'Original',
+    ]);
+
+    Livewire::test('pages::time.index')
+        ->call('editEntry', $entry->getKey())
+        ->assertSet('editStartedAt', '2026-05-21T09:30')
+        ->set('editDurationMinutes', 75)
+        ->set('editDescription', 'Revised')
+        ->call('saveEntry')
+        ->assertHasNoErrors()
+        ->assertSet('showEditModal', false);
+
+    $entry->refresh();
+
+    expect($entry->started_at->toDateTimeString())->toBe('2026-05-21 09:30:45')
+        ->and($entry->ended_at->toDateTimeString())->toBe('2026-05-21 10:45:45')
+        ->and($entry->duration_minutes)->toBe(75)
+        ->and($entry->description)->toBe('Revised');
 });
 
 test('deleting an entry invokes DeleteTimeEntry', function () {

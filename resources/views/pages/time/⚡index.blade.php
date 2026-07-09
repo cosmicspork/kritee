@@ -17,6 +17,7 @@ use Carbon\CarbonImmutable;
 use DateTimeInterface as NativeDateTimeInterface;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Mary\Traits\Toast;
@@ -40,6 +41,10 @@ new #[Title('Time')] class extends Component {
     public ?int $editingId = null;
     public int $editDurationMinutes = 0;
     public string $editStartedAt = '';
+    #[Locked]
+    public string $editOriginalStartedAt = '';
+    #[Locked]
+    public string $editOriginalStartedAtDisplay = '';
     public string $editDescription = '';
     public bool $editIsBillable = true;
 
@@ -154,7 +159,7 @@ new #[Title('Time')] class extends Component {
         ]);
 
         $startedAt = $this->parseDatetimeLocal($this->manualStartedAt);
-        $endedAt = $this->derivedEndAt($this->manualStartedAt, $this->manualDurationMinutes);
+        $endedAt = $this->derivedEndAt($startedAt, $this->manualDurationMinutes);
 
         $result = $recordManualTimeEntry->execute(new RecordManualTimeEntryInput(
             durationMinutes: $this->manualDurationMinutes,
@@ -185,8 +190,12 @@ new #[Title('Time')] class extends Component {
             ->where('user_id', Auth::id())
             ->findOrFail($entryId);
 
+        $editStartedAt = $entry->started_at ?? $entry->created_at ?? now();
+
         $this->editingId = $entry->getKey();
-        $this->editStartedAt = $this->datetimeLocalValue($entry->started_at ?? $entry->created_at ?? now());
+        $this->editStartedAt = $this->datetimeLocalValue($editStartedAt);
+        $this->editOriginalStartedAt = CarbonImmutable::instance($editStartedAt)->toDateTimeString();
+        $this->editOriginalStartedAtDisplay = $this->editStartedAt;
         $this->editDurationMinutes = $entry->duration_minutes;
         $this->editDescription = $entry->description ?? '';
         $this->editIsBillable = $entry->is_billable;
@@ -205,8 +214,8 @@ new #[Title('Time')] class extends Component {
             'editDescription' => ['nullable', 'string', 'max:2000'],
         ]);
 
-        $startedAt = $this->parseDatetimeLocal($this->editStartedAt);
-        $endedAt = $this->derivedEndAt($this->editStartedAt, $this->editDurationMinutes);
+        $startedAt = $this->editStartedAtValue();
+        $endedAt = $this->derivedEndAt($startedAt, $this->editDurationMinutes);
 
         $result = $updateTimeEntry->execute(new UpdateTimeEntryInput(
             timeEntryId: $this->editingId,
@@ -226,6 +235,8 @@ new #[Title('Time')] class extends Component {
         $this->showEditModal = false;
         $this->editingId = null;
         $this->editStartedAt = '';
+        $this->editOriginalStartedAt = '';
+        $this->editOriginalStartedAtDisplay = '';
         unset($this->entries);
 
         $this->success(__('Time entry updated.'));
@@ -258,9 +269,21 @@ new #[Title('Time')] class extends Component {
             : CarbonImmutable::instance($dateTime)->format('Y-m-d\\TH:i');
     }
 
-    private function derivedEndAt(string $startedAt, int $durationMinutes): CarbonImmutable
+    private function derivedEndAt(CarbonImmutable $startedAt, int $durationMinutes): CarbonImmutable
     {
-        return $this->parseDatetimeLocal($startedAt)->addMinutes($durationMinutes);
+        return $startedAt->addMinutes($durationMinutes);
+    }
+
+    private function editStartedAtValue(): CarbonImmutable
+    {
+        if (
+            $this->editStartedAt === $this->editOriginalStartedAtDisplay
+            && $this->editOriginalStartedAt !== ''
+        ) {
+            return CarbonImmutable::parse($this->editOriginalStartedAt);
+        }
+
+        return $this->parseDatetimeLocal($this->editStartedAt);
     }
 
     /**
