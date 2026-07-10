@@ -13,8 +13,11 @@ use App\Actions\TimeEntry\UpdateTimeEntryInput;
 use App\Models\Client;
 use App\Models\Project;
 use App\Models\TimeEntry;
+use Carbon\CarbonImmutable;
+use DateTimeInterface as NativeDateTimeInterface;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Mary\Traits\Toast;
@@ -28,6 +31,7 @@ new #[Title('Time')] class extends Component {
     public bool $timerIsBillable = true;
 
     public int $manualDurationMinutes = 0;
+    public string $manualStartedAt = '';
     public string $manualDescription = '';
     public ?int $manualClientId = null;
     public ?int $manualProjectId = null;
@@ -36,6 +40,11 @@ new #[Title('Time')] class extends Component {
     public bool $showEditModal = false;
     public ?int $editingId = null;
     public int $editDurationMinutes = 0;
+    public string $editStartedAt = '';
+    #[Locked]
+    public string $editOriginalStartedAt = '';
+    #[Locked]
+    public string $editOriginalStartedAtDisplay = '';
     public string $editDescription = '';
     public bool $editIsBillable = true;
 
@@ -55,7 +64,7 @@ new #[Title('Time')] class extends Component {
 
     /**
      * The user's logged entries, newest first. Excludes only an open timer
-     * (started but not yet ended); manually logged entries carry no start time.
+     * (started but not yet ended); manual entries include an explicit start time.
      *
      * @return \Illuminate\Database\Eloquent\Collection<int, TimeEntry>
      */
@@ -144,9 +153,13 @@ new #[Title('Time')] class extends Component {
     public function recordManualEntry(RecordManualTimeEntry $recordManualTimeEntry): void
     {
         $this->validate([
+            'manualStartedAt' => ['required', 'date_format:Y-m-d\\TH:i'],
             'manualDurationMinutes' => ['required', 'integer', 'min:1'],
             'manualDescription' => ['nullable', 'string', 'max:2000'],
         ]);
+
+        $startedAt = $this->parseDatetimeLocal($this->manualStartedAt);
+        $endedAt = $this->derivedEndAt($startedAt, $this->manualDurationMinutes);
 
         $result = $recordManualTimeEntry->execute(new RecordManualTimeEntryInput(
             durationMinutes: $this->manualDurationMinutes,
@@ -154,6 +167,8 @@ new #[Title('Time')] class extends Component {
             clientId: $this->manualClientId,
             description: $this->manualDescription !== '' ? $this->manualDescription : null,
             isBillable: $this->manualIsBillable,
+            startedAt: $startedAt->toDateTimeString(),
+            endedAt: $endedAt->toDateTimeString(),
         ));
 
         if (! $result->success) {
@@ -162,7 +177,7 @@ new #[Title('Time')] class extends Component {
             return;
         }
 
-        $this->reset('manualDurationMinutes', 'manualDescription', 'manualClientId', 'manualProjectId');
+        $this->reset('manualDurationMinutes', 'manualStartedAt', 'manualDescription', 'manualClientId', 'manualProjectId');
         $this->manualIsBillable = true;
         unset($this->entries);
 
@@ -175,7 +190,12 @@ new #[Title('Time')] class extends Component {
             ->where('user_id', Auth::id())
             ->findOrFail($entryId);
 
+        $editStartedAt = $entry->started_at ?? $entry->created_at ?? now();
+
         $this->editingId = $entry->getKey();
+        $this->editStartedAt = $this->datetimeLocalValue($editStartedAt);
+        $this->editOriginalStartedAt = CarbonImmutable::instance($editStartedAt)->toDateTimeString();
+        $this->editOriginalStartedAtDisplay = $this->editStartedAt;
         $this->editDurationMinutes = $entry->duration_minutes;
         $this->editDescription = $entry->description ?? '';
         $this->editIsBillable = $entry->is_billable;
@@ -189,15 +209,21 @@ new #[Title('Time')] class extends Component {
         }
 
         $this->validate([
+            'editStartedAt' => ['required', 'date_format:Y-m-d\\TH:i'],
             'editDurationMinutes' => ['required', 'integer', 'min:1'],
             'editDescription' => ['nullable', 'string', 'max:2000'],
         ]);
+
+        $startedAt = $this->editStartedAtValue();
+        $endedAt = $this->derivedEndAt($startedAt, $this->editDurationMinutes);
 
         $result = $updateTimeEntry->execute(new UpdateTimeEntryInput(
             timeEntryId: $this->editingId,
             description: $this->editDescription !== '' ? $this->editDescription : null,
             durationMinutes: $this->editDurationMinutes,
             isBillable: $this->editIsBillable,
+            startedAt: $startedAt->toDateTimeString(),
+            endedAt: $endedAt->toDateTimeString(),
         ));
 
         if (! $result->success) {
@@ -208,6 +234,9 @@ new #[Title('Time')] class extends Component {
 
         $this->showEditModal = false;
         $this->editingId = null;
+        $this->editStartedAt = '';
+        $this->editOriginalStartedAt = '';
+        $this->editOriginalStartedAtDisplay = '';
         unset($this->entries);
 
         $this->success(__('Time entry updated.'));
@@ -226,6 +255,35 @@ new #[Title('Time')] class extends Component {
         unset($this->entries);
 
         $this->success(__('Time entry deleted.'));
+    }
+
+    private function parseDatetimeLocal(string $value): CarbonImmutable
+    {
+        return CarbonImmutable::createFromFormat('Y-m-d\\TH:i', $value);
+    }
+
+    private function datetimeLocalValue(?NativeDateTimeInterface $dateTime): string
+    {
+        return $dateTime === null
+            ? ''
+            : CarbonImmutable::instance($dateTime)->format('Y-m-d\\TH:i');
+    }
+
+    private function derivedEndAt(CarbonImmutable $startedAt, int $durationMinutes): CarbonImmutable
+    {
+        return $startedAt->addMinutes($durationMinutes);
+    }
+
+    private function editStartedAtValue(): CarbonImmutable
+    {
+        if (
+            $this->editStartedAt === $this->editOriginalStartedAtDisplay
+            && $this->editOriginalStartedAt !== ''
+        ) {
+            return CarbonImmutable::parse($this->editOriginalStartedAt);
+        }
+
+        return $this->parseDatetimeLocal($this->editStartedAt);
     }
 
     /**
@@ -314,6 +372,14 @@ new #[Title('Time')] class extends Component {
     <x-card :title="__('Log time')" :subtitle="__('Record a completed block of time')">
         <form wire:submit="recordManualEntry" class="grid gap-4 sm:grid-cols-2">
             <x-input
+                wire:model="manualStartedAt"
+                label="{{ __('Start') }}"
+                type="datetime-local"
+                required
+                data-test="manual-started-at"
+            />
+
+            <x-input
                 wire:model="manualDurationMinutes"
                 label="{{ __('Duration (minutes)') }}"
                 type="number"
@@ -376,6 +442,7 @@ new #[Title('Time')] class extends Component {
                 <thead>
                     <tr>
                         <th>{{ __('Description') }}</th>
+                        <th>{{ __('Date') }}</th>
                         <th>{{ __('Client') }}</th>
                         <th>{{ __('Project') }}</th>
                         <th>{{ __('Duration') }}</th>
@@ -387,6 +454,7 @@ new #[Title('Time')] class extends Component {
                     @foreach ($this->entries as $entry)
                         <tr wire:key="entry-{{ $entry->id }}">
                             <td>{{ $entry->description ?: __('Untitled') }}</td>
+                            <td data-test="entry-date-{{ $entry->id }}">{{ $entry->started_at?->toDateString() ?? '—' }}</td>
                             <td class="text-base-content/70">{{ $entry->client?->name ?? '—' }}</td>
                             <td class="text-base-content/70">{{ $entry->project?->name ?? '—' }}</td>
                             <td class="font-mono">{{ \App\Services\Support\DurationFormatter::minutes($entry->duration_minutes) }}</td>
@@ -429,6 +497,14 @@ new #[Title('Time')] class extends Component {
                 label="{{ __('Description') }}"
                 placeholder="{{ __('What did you do?') }}"
                 data-test="edit-description"
+            />
+
+            <x-input
+                wire:model="editStartedAt"
+                label="{{ __('Start') }}"
+                type="datetime-local"
+                required
+                data-test="edit-started-at"
             />
 
             <x-input

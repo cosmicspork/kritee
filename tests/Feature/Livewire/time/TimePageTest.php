@@ -4,8 +4,10 @@ use App\Actions\Contracts\ActionResult;
 use App\Actions\TimeEntry\DeleteTimeEntry;
 use App\Actions\TimeEntry\RecordManualTimeEntry;
 use App\Actions\TimeEntry\StartTimer;
+use App\Actions\TimeEntry\UpdateTimeEntry;
 use App\Models\TimeEntry;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Livewire\Livewire;
 
 /**
@@ -86,12 +88,14 @@ test('stopping the timer invokes StopTimer and closes the entry', function () {
         ->and($running->duration_minutes)->toBeGreaterThan(0);
 });
 
-test('recording a manual entry invokes RecordManualTimeEntry', function () {
+test('recording a manual entry persists the selected start and derived end time', function () {
     $user = actOnTimePage();
 
     Livewire::test('pages::time.index')
-        ->set('manualDurationMinutes', 45)
+        ->set('manualStartedAt', '2026-05-21T09:30')
+        ->set('manualDurationMinutes', 60)
         ->set('manualDescription', 'Client call')
+        ->set('manualIsBillable', false)
         ->call('recordManualEntry')
         ->assertHasNoErrors()
         ->assertSee('Client call');
@@ -99,8 +103,25 @@ test('recording a manual entry invokes RecordManualTimeEntry', function () {
     $entry = TimeEntry::sole();
 
     expect($entry->user_id)->toBe($user->getKey())
-        ->and($entry->duration_minutes)->toBe(45)
-        ->and($entry->is_billable)->toBeTrue();
+        ->and($entry->started_at->toDateTimeString())->toBe('2026-05-21 09:30:00')
+        ->and($entry->ended_at->toDateTimeString())->toBe('2026-05-21 10:30:00')
+        ->and($entry->duration_minutes)->toBe(60)
+        ->and($entry->is_billable)->toBeFalse();
+});
+
+test('a manual entry requires a start datetime', function () {
+    actOnTimePage();
+
+    $this->mock(RecordManualTimeEntry::class)->shouldNotReceive('execute');
+
+    Livewire::test('pages::time.index')
+        ->set('manualStartedAt', '')
+        ->set('manualDurationMinutes', 30)
+        ->set('manualDescription', 'Client call')
+        ->call('recordManualEntry')
+        ->assertHasErrors(['manualStartedAt' => ['required']]);
+
+    expect(TimeEntry::count())->toBe(0);
 });
 
 test('a non-positive manual duration fails validation before the action runs', function () {
@@ -116,10 +137,48 @@ test('a non-positive manual duration fails validation before the action runs', f
     expect(TimeEntry::count())->toBe(0);
 });
 
-test('editing an entry invokes UpdateTimeEntry', function () {
+test('editing an entry pre-fills the start datetime for a datetime-local input', function () {
     $user = actOnTimePage();
 
     $entry = TimeEntry::factory()->for($user)->create([
+        'started_at' => '2026-05-21 09:30:00',
+        'ended_at' => '2026-05-21 10:30:00',
+        'duration_minutes' => 60,
+        'description' => 'Original',
+    ]);
+
+    Livewire::test('pages::time.index')
+        ->call('editEntry', $entry->getKey())
+        ->assertSet('showEditModal', true)
+        ->assertSet('editStartedAt', '2026-05-21T09:30')
+        ->assertSet('editDurationMinutes', 60)
+        ->assertSet('editDescription', 'Original');
+});
+
+test('editing a dateless entry pre-fills the start datetime from when it was created', function () {
+    $user = actOnTimePage();
+
+    $entry = TimeEntry::factory()->for($user)->create([
+        'started_at' => null,
+        'ended_at' => null,
+        'duration_minutes' => 45,
+        'created_at' => '2026-05-20 08:45:17',
+        'updated_at' => '2026-05-20 09:00:00',
+    ]);
+
+    Livewire::test('pages::time.index')
+        ->call('editEntry', $entry->getKey())
+        ->assertSet('showEditModal', true)
+        ->assertSet('editStartedAt', '2026-05-20T08:45')
+        ->assertSet('editDurationMinutes', 45);
+});
+
+test('saving an edited entry persists the selected start and derived end time', function () {
+    $user = actOnTimePage();
+
+    $entry = TimeEntry::factory()->for($user)->create([
+        'started_at' => '2026-05-21 09:00:00',
+        'ended_at' => '2026-05-21 09:30:00',
         'duration_minutes' => 30,
         'description' => 'Original',
         'is_billable' => true,
@@ -128,9 +187,9 @@ test('editing an entry invokes UpdateTimeEntry', function () {
     Livewire::test('pages::time.index')
         ->call('editEntry', $entry->getKey())
         ->assertSet('showEditModal', true)
-        ->assertSet('editDurationMinutes', 30)
+        ->set('editStartedAt', '2026-05-22T14:15')
+        ->set('editDurationMinutes', 75)
         ->set('editDescription', 'Revised')
-        ->set('editDurationMinutes', 90)
         ->set('editIsBillable', false)
         ->call('saveEntry')
         ->assertHasNoErrors()
@@ -138,9 +197,67 @@ test('editing an entry invokes UpdateTimeEntry', function () {
 
     $entry->refresh();
 
-    expect($entry->duration_minutes)->toBe(90)
+    expect($entry->started_at->toDateTimeString())->toBe('2026-05-22 14:15:00')
+        ->and($entry->ended_at->toDateTimeString())->toBe('2026-05-22 15:30:00')
+        ->and($entry->duration_minutes)->toBe(75)
         ->and($entry->description)->toBe('Revised')
         ->and($entry->is_billable)->toBeFalse();
+});
+
+test('saving an edited entry requires a start datetime', function () {
+    $user = actOnTimePage();
+
+    $entry = TimeEntry::factory()->for($user)->create([
+        'started_at' => '2026-05-21 09:30:00',
+        'ended_at' => '2026-05-21 10:00:00',
+        'duration_minutes' => 30,
+        'description' => 'Original',
+    ]);
+
+    $originalStartedAt = $entry->started_at->toDateTimeString();
+    $originalEndedAt = $entry->ended_at->toDateTimeString();
+
+    $this->mock(UpdateTimeEntry::class)->shouldNotReceive('execute');
+
+    Livewire::test('pages::time.index')
+        ->call('editEntry', $entry->getKey())
+        ->set('editStartedAt', '')
+        ->call('saveEntry')
+        ->assertHasErrors(['editStartedAt' => ['required']]);
+
+    $entry->refresh();
+
+    expect($entry->started_at->toDateTimeString())->toBe($originalStartedAt)
+        ->and($entry->ended_at->toDateTimeString())->toBe($originalEndedAt)
+        ->and($entry->duration_minutes)->toBe(30)
+        ->and($entry->description)->toBe('Original');
+});
+
+test('saving an edited entry preserves sub-minute start precision when the displayed start is unchanged', function () {
+    $user = actOnTimePage();
+
+    $entry = TimeEntry::factory()->for($user)->create([
+        'started_at' => '2026-05-21 09:30:45',
+        'ended_at' => '2026-05-21 10:00:45',
+        'duration_minutes' => 30,
+        'description' => 'Original',
+    ]);
+
+    Livewire::test('pages::time.index')
+        ->call('editEntry', $entry->getKey())
+        ->assertSet('editStartedAt', '2026-05-21T09:30')
+        ->set('editDurationMinutes', 75)
+        ->set('editDescription', 'Revised')
+        ->call('saveEntry')
+        ->assertHasNoErrors()
+        ->assertSet('showEditModal', false);
+
+    $entry->refresh();
+
+    expect($entry->started_at->toDateTimeString())->toBe('2026-05-21 09:30:45')
+        ->and($entry->ended_at->toDateTimeString())->toBe('2026-05-21 10:45:45')
+        ->and($entry->duration_minutes)->toBe(75)
+        ->and($entry->description)->toBe('Revised');
 });
 
 test('deleting an entry invokes DeleteTimeEntry', function () {
@@ -171,6 +288,28 @@ test('a failed action surfaces its error and changes nothing', function () {
         ->assertHasNoErrors();
 
     expect(TimeEntry::find($entry->getKey()))->not->toBeNull();
+});
+
+test('entries show their work date from started_at', function () {
+    $user = actOnTimePage();
+
+    $datedEntry = TimeEntry::factory()->for($user)->create([
+        'description' => 'Discovery workshop',
+        'started_at' => CarbonImmutable::parse('2026-05-28 09:15:00'),
+        'ended_at' => CarbonImmutable::parse('2026-05-28 10:00:00'),
+        'duration_minutes' => 45,
+    ]);
+
+    $manualEntry = TimeEntry::factory()->for($user)->create([
+        'description' => 'Backfilled admin',
+        'started_at' => null,
+        'ended_at' => null,
+        'duration_minutes' => 30,
+    ]);
+
+    Livewire::test('pages::time.index')
+        ->assertSeeHtml('data-test="entry-date-'.$datedEntry->getKey().'">2026-05-28</td>')
+        ->assertSeeHtml('data-test="entry-date-'.$manualEntry->getKey().'">—</td>');
 });
 
 test('a user only sees their own entries', function () {
