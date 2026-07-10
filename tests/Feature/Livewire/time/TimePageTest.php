@@ -7,6 +7,7 @@ use App\Actions\TimeEntry\StartTimer;
 use App\Actions\TimeEntry\UpdateTimeEntry;
 use App\Models\TimeEntry;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Livewire\Livewire;
 
 /**
@@ -294,8 +295,8 @@ test('entries show their work date from started_at', function () {
 
     $datedEntry = TimeEntry::factory()->for($user)->create([
         'description' => 'Discovery workshop',
-        'started_at' => \Carbon\CarbonImmutable::parse('2026-05-28 09:15:00'),
-        'ended_at' => \Carbon\CarbonImmutable::parse('2026-05-28 10:00:00'),
+        'started_at' => CarbonImmutable::parse('2026-05-28 09:15:00'),
+        'ended_at' => CarbonImmutable::parse('2026-05-28 10:00:00'),
         'duration_minutes' => 45,
     ]);
 
