@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.0](https://github.com/cosmicspork/kritee/compare/kritee-v0.1.0...kritee-v0.2.0) (2026-07-10)
+
+
+### Features
+
+* **time:** date manual time entries ([#29](https://github.com/cosmicspork/kritee/issues/29)) ([d38ab31](https://github.com/cosmicspork/kritee/commit/d38ab3180d1976db866ff5220fe4ffc4569f209a))
+
+
+### Bug Fixes
+
+* **migrations:** create clients and projects before tables that reference them ([#27](https://github.com/cosmicspork/kritee/issues/27)) ([ff657cb](https://github.com/cosmicspork/kritee/commit/ff657cb3c18b3d46fbe9ec3b75f0fda4d326b28e))
+
 ## 0.1.0 (2026-07-07)
 
 
