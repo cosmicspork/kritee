@@ -1,7 +1,9 @@
-# Kritee
+# laravel-work-management
 
-[![tests](https://github.com/cosmicspork/kritee/actions/workflows/tests.yml/badge.svg)](https://github.com/cosmicspork/kritee/actions/workflows/tests.yml)
-[![linter](https://github.com/cosmicspork/kritee/actions/workflows/lint.yml/badge.svg)](https://github.com/cosmicspork/kritee/actions/workflows/lint.yml)
+> **Archived 2026-11.** Formerly `kritee`. Retired and removed from Laravel Cloud: its books moved to plain files and time tracking moved to [hora](https://github.com/cosmicspork/hora). Kept as a reference and no longer maintained.
+
+[![tests](https://github.com/cosmicspork/laravel-work-management/actions/workflows/tests.yml/badge.svg)](https://github.com/cosmicspork/laravel-work-management/actions/workflows/tests.yml)
+[![linter](https://github.com/cosmicspork/laravel-work-management/actions/workflows/lint.yml/badge.svg)](https://github.com/cosmicspork/laravel-work-management/actions/workflows/lint.yml)
 
 A Laravel application for managing work — **accounting**, **tasks/kanban**, and **time tracking**.
 
@@ -15,7 +17,7 @@ sometimes romanised with an accented long *i* (*kṛti* / *kritī*), which is wh
 - **Laravel 13** on **PHP 8.5**
 - **Livewire 4**
 - **Fortify** for authentication
-- **Postgres** (Valkey for cache/queue), deployed to **Laravel Cloud**
+- **Postgres** (Valkey for cache/queue), formerly deployed to **Laravel Cloud**
 - **Pest 4** for tests, **Larastan/PHPStan** (level 6) for static analysis, **Pint** for formatting
 
 ## Getting started
